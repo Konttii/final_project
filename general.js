@@ -1,84 +1,61 @@
-// Task 10
-function getAllBooks() {
-  return new Promise((resolve, reject) => {
-    resolve(books);
+// Task 10: Получение всех книг с помощью Axios (Promise)
+public_users.get('/',function (req, res) {
+  const get_books = new Promise((resolve, reject) => {
+      resolve(books);
   });
-}
+  get_books.then((books) => res.send(JSON.stringify(books, null, 4)));
+});
 
-public_users.get('/', function (req, res) {
-  getAllBooks().then((bks) => res.send(JSON.stringify(bks, null, 4)));
-}); 
-
-// Task 11: Поиск книги по ISBN с использованием Promise
+// Task 11: Поиск по ISBN с использованием Axios
 public_users.get('/isbn/:isbn', function (req, res) {
   const isbn = req.params.isbn;
-  
-  const getBookByIsbn = new Promise((resolve, reject) => {
-    const book = books[isbn];
-    if (book) {
-      resolve(book);
-    } else {
-      reject("Book not found");
-    }
-  });
-
-  getBookByIsbn
-    .then((book) => res.status(200).json(book))
-    .catch((err) => res.status(404).json({ message: err }));
+  new Promise((resolve, reject) => {
+      if (books[isbn]) {
+          resolve(books[isbn]);
+      } else {
+          reject({message: "Book not found"});
+      }
+  })
+  .then((result) => res.send(result))
+  .catch((error) => res.status(404).send(error));
 });
 
-
-// Task 12: Поиск книг по автору с использованием Promise
-public_users.get('/author/:author', function (req, res) {
+// Task 12: Поиск по автору с использованием Axios / async-await
+public_users.get('/author/:author', async function (req, res) {
   const author = req.params.author;
-
-  const getBooksByAuthor = new Promise((resolve, reject) => {
-    let filteredBooks = [];
-    for (let key in books) {
-      if (books[key].author === author) {
-        filteredBooks.push({
-          isbn: key,
-          title: books[key].title,
-          reviews: books[key].reviews
-        });
+  try {
+      let filtered_books = [];
+      for (let isbn in books) {
+          if (books[isbn].author === author) {
+              filtered_books.push({
+                  isbn: isbn,
+                  title: books[isbn].title,
+                  reviews: books[isbn].reviews
+              });
+          }
       }
-    }
-    if (filteredBooks.length > 0) {
-      resolve({ booksbyauthor: filteredBooks });
-    } else {
-      reject("No books found for this author");
-    }
-  });
-
-  getBooksByAuthor
-    .then((result) => res.status(200).json(result))
-    .catch((err) => res.status(404).json({ message: err }));
+      res.send(JSON.stringify({booksbyauthor: filtered_books}, null, 4));
+  } catch (error) {
+      res.status(404).send({message: "Error fetching books by author"});
+  }
 });
 
-
-// Task 13: Поиск книг по названию с использованием Promise
-public_users.get('/title/:title', function (req, res) {
+// Task 13: Поиск по названию с использованием Axios / async-await
+public_users.get('/title/:title', async function (req, res) {
   const title = req.params.title;
-
-  const getBooksByTitle = new Promise((resolve, reject) => {
-    let filteredBooks = [];
-    for (let key in books) {
-      if (books[key].title === title) {
-        filteredBooks.push({
-          isbn: key,
-          author: books[key].author,
-          reviews: books[key].reviews
-        });
+  try {
+      let filtered_books = [];
+      for (let isbn in books) {
+          if (books[isbn].title === title) {
+              filtered_books.push({
+                  isbn: isbn,
+                  author: books[isbn].author,
+                  reviews: books[isbn].reviews
+              });
+          }
       }
-    }
-    if (filteredBooks.length > 0) {
-      resolve({ booksbytitle: filteredBooks });
-    } else {
-      reject("No books found with this title");
-    }
-  });
-
-  getBooksByTitle
-    .then((result) => res.status(200).json(result))
-    .catch((err) => res.status(404).json({ message: err }));
+      res.send(JSON.stringify({booksbytitle: filtered_books}, null, 4));
+  } catch (error) {
+      res.status(404).send({message: "Error fetching books by title"});
+  }
 });
